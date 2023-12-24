@@ -2,53 +2,82 @@ import styles from './Post.module.css';
 import { Comment } from './Comment';
 import { Avatar } from './Avatar';
 
-// author: {avatar_url: "", name: "", role: ""}
-// publishedAt: Date
-// content: ""
+import { format, formatDistanceToNow } from 'date-fns'
+import ptBR from 'date-fns/locale/pt-BR'
+import { useState } from 'react';
 
+export function Post({ author, content, publishedAt }) {
+    const [comments, setComments] = useState(
+        ['Post muito bacana hein!']
+    );
 
-export function Post({author, content, publishedAt}) {
+    const [newCommentText, setNewCommentText] = useState(''); 
+
+    const publishedAtFormatted = format(publishedAt, "d 'de' LLLL 'às' HH:mm'h'", { locale: ptBR })
+    const publishedDateRelativetoNow = formatDistanceToNow(publishedAt, { locale: ptBR, addSuffix: true })
+
+    function handleCreateNewComment() {
+        event.preventDefault();
+        setComments([...comments, newCommentText]);
+        setNewCommentText('');
+    }
+
+    function handleNewCommentChange() {
+        event.target.setCustomValidity('');
+        setNewCommentText(event.target.value);
+    }
+
+    function handleNewCommentInvalid() {
+        event.target.setCustomValidity('Esse campo é obrigatório!');
+    }
+
+    function deleteComment(comment) {
+        const commentsWithoutDeletedOne = comments.filter(c => c !== comment);
+        setComments(commentsWithoutDeletedOne);
+    }
+
     return (
         <article className={styles.post}>
             <header>
                 <div className={styles.author}>
                     <Avatar
-                        src="https://media.istockphoto.com/id/1386479313/photo/happy-millennial-afro-american-business-woman-posing-isolated-on-white.webp?b=1&s=170667a&w=0&k=20&c=ahypUC_KTc95VOsBkzLFZiCQ0VJwewfrSV43BOrLETM="
+                        src={author.avatarUrl}
                     />
                     <div className={styles.info}>
-                        <strong>Jaime Rodrigues</strong>
-                        <span>UI Designer</span>
+                        <strong>{author.name}</strong>
+                        <span>{author.role}</span>
                     </div>
                 </div>
-
-                <time title='10 de Novembro às 21:35h' dateTime='2023-11-10 21:35:00'>Publicado há 1h</time>
+                <time title={publishedAtFormatted} dateTime={publishedAt.toISOString()}>Publicado {publishedDateRelativetoNow}</time>
             </header>
 
             <div className={styles.content}>
-                <p>Fala galeraa 👋</p>
-                <p>Acabei de subir mais um projeto no meu portifa. É um projeto que fiz no NLW Return, evento da Rocketseat. O nome do projeto é DoctorCare 🚀</p>
-                <p><a href="">jane.design/doctorcare</a></p>
-                <p>
-                    <a href="">#novoprojeto</a>{" "}
-                    <a href=''>#nlw</a>{" "}
-                    <a href=''>#rocketseat</a>
-                </p>
+                {content.map((line) => {
+                    if (line.type === 'paragraph') {
+                        return <p key={line.content}>{line.content}</p>
+                    } else if (line.type === 'link') {
+                        return <p key={line.content}><a href="#">{line.content}</a></p>
+                    }
+                })}
             </div>
 
-            <form className={styles.commentForm}>   
+            <form onSubmit={handleCreateNewComment} className={styles.commentForm}>   
                 <strong>Deixe seu Feedback</strong>
                 <textarea
+                    name='comment'
                     placeholder='Deixe um Comentário'
+                    value={newCommentText}
+                    onChange={handleNewCommentChange}
+                    onInvalid={handleNewCommentInvalid}
+                    required
                 />
                 <footer>
-                    <button type='submit'>Publicar</button>
+                    <button type='submit' disabled={newCommentText.length === 0}>Publicar</button>
                 </footer>
             </form>
             
             <div className={styles.commentList}>
-                <Comment />
-                <Comment/>
-                <Comment/>
+                {comments.map((comment) => <Comment key={comment} content={comment} onDeleteComment={deleteComment} />)}
             </div>
         </article>
     )
