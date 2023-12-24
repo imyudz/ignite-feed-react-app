@@ -1,0 +1,20 @@
+.wrapper{
+    max-width: 70rem; /* Analisando o design, conseguimos visualizar que a soma da largura juntado a sidebar com os posts e o espaçamento entre elas dá 1120px, dividindo por 16px (1rem), 70rem. */
+    margin: 2rem auto;
+    padding: 0 1rem;
+
+    display: grid;
+    grid-template-columns: 256px 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    /* 768px e menor */
+    html {
+        font-size: 87.5%; /* 14px obs: consigo deixar minha tela toda responsiva usando o html pq configurei todos os tamanhos usando o rem */
+    }
+    .wrapper{
+        grid-template-columns: 1fr;
+    }
+}
